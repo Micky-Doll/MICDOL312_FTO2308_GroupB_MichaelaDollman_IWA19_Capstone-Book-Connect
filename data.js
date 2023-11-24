@@ -1,6 +1,9 @@
 export const state = {
   pageNumber: null,
   booksLoaded: {},
+  isSearching: false,
+  searchResult: null,
+  theme: null,
 };
 
 export const BOOKS_PER_PAGE = 36;

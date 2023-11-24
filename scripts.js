@@ -132,7 +132,7 @@ state.pageNumber = 1;
 
 if (!books && !Array.isArray(books)) throw new Error("Source required");
 
-const themeCSS = {
+const themeSetting = {
   day: {
     dark: "10, 10, 20",
     light: "255, 255, 255",
@@ -238,7 +238,6 @@ const handleSearchToggle = (event) => {
 };
 
 const handleSettingsToggle = (event) => {
-  event.preventDefault();
   html.settingsOverlay.overlay.toggleAttribute("open");
 };
 
@@ -282,6 +281,28 @@ const handleShowMore = () => {
   createBookList(books);
 };
 
+const handleSettingsSubmit = (event) => {
+  event.preventDefault();
+  const theme = event.target[0].value;
+
+  if (theme === "night") {
+    state.theme = "dark";
+  } else {
+    state.theme = "light";
+  }
+
+  document.documentElement.style.setProperty(
+    "--color-dark",
+    themeSetting[theme].dark
+  );
+  document.documentElement.style.setProperty(
+    "--color-light",
+    themeSetting[theme].light
+  );
+
+  handleSettingsToggle();
+};
+
 // Event Listeners
 html.headerButtons.search.addEventListener("click", handleSearchToggle);
 
@@ -299,10 +320,7 @@ html.list.items.addEventListener("click", handleItemClick);
 html.overlay.close.addEventListener("click", handleItemClick);
 html.list.button.addEventListener("click", handleShowMore);
 
-html.settingsOverlay.form.addEventListener(
-  "submit",
-  console.log("Saves chosen settings")
-);
+html.settingsOverlay.form.addEventListener("submit", handleSettingsSubmit);
 html.settingsOverlay.theme.addEventListener(
   "click",
   console.log("Opens dropdown menu to choose between day or night mode")
