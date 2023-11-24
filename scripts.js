@@ -146,7 +146,7 @@
 //     data-list-description === active.description
 // }
 
-import { books, BOOKS_PER_PAGE } from "./data.js";
+import { books, BOOKS_PER_PAGE, genres } from "./data.js";
 import { createBookHtml, html } from "./view.js";
 
 // Making a fragment to house our data element and loop it; Giving the information to the createHTML function to run instructions on
@@ -172,20 +172,46 @@ const createButtonText = () => {
   // data-list-button.disabled = !(matches.length - [page * BOOKS_PER_PAGE] > 0)
 };
 
+// Dropdown menu for Authors
+const createAuthorOptions = () => {
+  const fragment = document.createDocumentFragment();
+
+  const defaultOption = document.createElement("option");
+  defaultOption.value = "any";
+  defaultOption.innerText = "All Authors";
+  authors.appendChild(defaultOption);
+
+  let authorIdArray = Object.keys(authors);
+  for (let i = 0; i < authorIdArray.length; i++) {
+    const id = authorIdArray[i];
+    const option = document.createElement("option");
+    option.value = id;
+    option.innerText = authors[id];
+    fragment.appendChild(option);
+  }
+
+  html.searchOverlay.authors.appendChild(fragment);
+};
+
+// Dropdown menu for Genres
 const createGenreOptions = () => {
-  const genres = document.createDocumentFragment();
+  const fragment = document.createDocumentFragment();
 
-  const element = document.createElement("option");
-  element.value = "any";
-  element.innerText = "All Genres";
-  genres.appendChild(element);
+  const defaultOption = document.createElement("option");
+  defaultOption.value = "any";
+  defaultOption.innerText = "All Genres";
+  genres.appendChild(defaultOption);
 
-  // for ([id, name]; Object.entries(genres); i++) {
-  //     document.createElement('option')
-  //     element.value = value
-  //     element.innerText = text
-  //     genres.appendChild(element)
-  // }
+  let genreIdArray = Object.keys(genres);
+  for (let i = 0; i < genreIdArray.length; i++) {
+    const id = genreIdArray[i];
+    const option = document.createElement("option");
+    option.value = id;
+    option.innerText = genres[id];
+    fragment.appendChild(option);
+  }
+
+  html.searchOverlay.genres.appendChild(fragment);
 };
 
 // Things to happen when the page first loads
