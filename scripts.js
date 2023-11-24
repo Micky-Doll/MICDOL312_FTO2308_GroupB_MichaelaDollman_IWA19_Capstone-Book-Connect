@@ -2,7 +2,6 @@
 // page = 1;
 
 // if (!books && !Array.isArray(books)) throw new Error('Source required')
-// if (!range && range.length < 2) throw new Error('Range must be an array with two numbers')
 
 // day = {
 //     dark: '10, 10, 20',
@@ -13,26 +12,6 @@
 //     dark: '255, 255, 255',
 //     light: '10, 10, 20',
 // }
-
-// data-search-genres.appendChild(genres)
-
-// authors = document.createDocumentFragment()
-// element = document.createElement('option')
-// element.value = 'any'
-// element.innerText = 'All Authors'
-// authors.appendChild(element)
-
-// for ([id, name];Object.entries(authors); id++) {
-//     document.createElement('option')
-//     element.value = value
-//     element = text
-//     authors.appendChild(element)
-// }
-
-// data-search-authors.appendChild(authors)
-
-// data-settings-theme.value === window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'day'
-// v = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches? 'night' | 'day'
 
 // documentElement.style.setProperty('--color-dark', css[v].dark);
 // documentElement.style.setProperty('--color-light', css[v].light);
@@ -146,12 +125,28 @@
 //     data-list-description === active.description
 // }
 
-import { books, BOOKS_PER_PAGE, genres } from "./data.js";
+import { books, BOOKS_PER_PAGE, genres, authors, state } from "./data.js";
 import { createBookHtml, html } from "./view.js";
+
+state.pageNumber = 1;
+
+const themeCSS = {
+  day: {
+    dark: "10, 10, 20",
+    light: "255, 255, 255",
+  },
+  night: {
+    dark: "255, 255, 255",
+    light: "10, 10, 20",
+  },
+};
 
 // Making a fragment to house our data element and loop it; Giving the information to the createHTML function to run instructions on
 // Everything that needs to happen to create multiple previews
 const createBookList = () => {
+  const startPosition = (state.pageNumber - 1) * BOOKS_PER_PAGE;
+  const endPosition = startPosition + BOOKS_PER_PAGE - 1;
+
   const fragment = document.createDocumentFragment();
   const extracted = books.slice(0, BOOKS_PER_PAGE); // Accounting for arrays starting at 0
 
@@ -179,7 +174,7 @@ const createAuthorOptions = () => {
   const defaultOption = document.createElement("option");
   defaultOption.value = "any";
   defaultOption.innerText = "All Authors";
-  authors.appendChild(defaultOption);
+  fragment.appendChild(defaultOption);
 
   let authorIdArray = Object.keys(authors);
   for (let i = 0; i < authorIdArray.length; i++) {
@@ -200,7 +195,7 @@ const createGenreOptions = () => {
   const defaultOption = document.createElement("option");
   defaultOption.value = "any";
   defaultOption.innerText = "All Genres";
-  genres.appendChild(defaultOption);
+  fragment.appendChild(defaultOption);
 
   let genreIdArray = Object.keys(genres);
   for (let i = 0; i < genreIdArray.length; i++) {
@@ -217,18 +212,69 @@ const createGenreOptions = () => {
 // Things to happen when the page first loads
 createBookList();
 createButtonText();
-// Event Listeners
-html.headerButtons.search.addEventListener(
-  "click",
-  console.log("Open up book searching overlay")
-);
-html.headerButtons.settings.addEventListener(
-  "click",
-  console.log("Open up settings menu overlay")
-);
+createAuthorOptions();
+createGenreOptions();
 
-html.list.items.addEventListener();
-html.list.messages.addEventListener();
+if (
+  window.matchMedia &&
+  window.matchMedia("(prefers-color-scheme: dark)").matches
+) {
+  state.theme = "night";
+}
+
+// Event Handlers
+const handleSearchToggle = (event) => {
+  event.preventDefault();
+  html.searchOverlay.overlay.toggleAttribute("open");
+};
+
+const handleSettingsToggle = (event) => {
+  event.preventDefault();
+  html.settingsOverlay.overlay.toggleAttribute("open");
+};
+
+const handleItemClick = (event) => {
+  event.preventDefault();
+  html.overlay.active.toggleAttribute("open");
+
+  let idValue = null;
+
+  if (
+    [
+      "preview",
+      "preview__image",
+      "preview__info",
+      "preview__author",
+      "preview__title",
+    ].includes(event.srcElement.classList[0])
+  ) {
+    const path = event.path || event.composedPath();
+    for (const element of path) {
+      const { id } = element.dataset;
+      if (id) {
+        idValue = id;
+        break;
+      }
+    }
+  }
+};
+
+// Event Listeners
+html.headerButtons.search.addEventListener("click", handleSearchToggle);
+
+// html.searchOverlay.form.addEventListener(
+//   "submit",
+//   console.log("search the database for books meeting set criteria")
+// );
+
+html.searchOverlay.cancel.addEventListener("click", handleSearchToggle);
+
+html.headerButtons.settings.addEventListener("click", handleSettingsToggle);
+html.settingsOverlay.cancel.addEventListener("click", handleSettingsToggle);
+
+html.list.items.addEventListener("click", handleItemClick);
+html.overlay.close.addEventListener("click", handleItemClick);
+
 html.list.button.addEventListener(
   "click",
   console.log("Not really sure what this one is doing")
@@ -240,31 +286,6 @@ html.overlay.image.addEventListener();
 html.overlay.title.addEventListener();
 html.overlay.subtitle.addEventListener();
 html.overlay.description.addEventListener();
-html.overlay.close.addEventListener(
-  "click",
-  console.log("Closes the individually viewed book overlay")
-);
-
-html.searchOverlay.overlay.addEventListener();
-html.searchOverlay.form.addEventListener(
-  "submit",
-  console.log("search the database for books meeting set criteria")
-);
-html.searchOverlay.title.addEventListener(
-  "click",
-  console.log("Engage text box to enter title of book being searched")
-);
-html.searchOverlay.genre.addEventListener(
-  "click",
-  console.log("Open dropdown menu for genres")
-);
-html.searchOverlay.authors.addEventListener(
-  "click",
-  console.log("Open dropdown menu of authors")
-);
-html.searchOverlay.cancel("click", console.log("Close search menu overlay"));
-/* Is there a way to make it so that if the author or genre is selected first, the other eliminates either 
-genres not applicable to that author or authors who do not write that genre from their respective dropdown menus. */
 
 html.settingsOverlay.overlay.addEventListener();
 html.settingsOverlay.form.addEventListener(
@@ -274,8 +295,4 @@ html.settingsOverlay.form.addEventListener(
 html.settingsOverlay.theme.addEventListener(
   "click",
   console.log("Opens dropdown menu to choose between day or night mode")
-);
-html.settingsOverlay.cancel.addEventListener(
-  "click",
-  console.log("Exits the settings menu without saving settings")
 );
