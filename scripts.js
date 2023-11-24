@@ -130,6 +130,8 @@ import { createBookHtml, html } from "./view.js";
 
 state.pageNumber = 1;
 
+if (!books && !Array.isArray(books)) throw new Error("Source required");
+
 const themeCSS = {
   day: {
     dark: "10, 10, 20",
@@ -141,30 +143,38 @@ const themeCSS = {
   },
 };
 
+const createButtonText = (array) => {
+  html.list.button.innerHTML = /* html */ `
+    <span>Show more</span>
+    <span class="list__remaining"> (${
+      array.length - Object.keys(state.booksLoaded).length
+    })</span>
+`;
+  // data-list-button.disabled = !(matches.length - [page * BOOKS_PER_PAGE] > 0)
+};
+
 // Making a fragment to house our data element and loop it; Giving the information to the createHTML function to run instructions on
 // Everything that needs to happen to create multiple previews
-const createBookList = () => {
+// Giving the function an editable parameter (array) to create books depending on necessity
+const createBookList = (array) => {
   const startPosition = (state.pageNumber - 1) * BOOKS_PER_PAGE;
-  const endPosition = startPosition + BOOKS_PER_PAGE - 1;
+  const endPosition = startPosition + BOOKS_PER_PAGE;
 
   const fragment = document.createDocumentFragment();
-  const extracted = books.slice(0, BOOKS_PER_PAGE); // Accounting for arrays starting at 0
+  const extracted = array.slice(startPosition, endPosition); // Accounting for arrays starting at 0
 
   for (let i = 0; i < extracted.length; i++) {
     const bookInfo = extracted[i];
+    state.booksLoaded[bookInfo.id] = bookInfo;
+    // state.loaded[id] = {id, image, author, title, description, publish}
     const preview = createBookHtml(bookInfo); // preview = what createBookHtml returns
     fragment.appendChild(preview);
   }
 
-  html.list.items.appendChild(fragment);
-};
+  state.pageNumber += 1;
 
-const createButtonText = () => {
-  html.list.button.innerHTML = /* html */ `
-    <span>Show more</span>
-    <span class="list__remaining"> (${books.length - BOOKS_PER_PAGE})</span>
-`;
-  // data-list-button.disabled = !(matches.length - [page * BOOKS_PER_PAGE] > 0)
+  html.list.items.appendChild(fragment);
+  createButtonText(array);
 };
 
 // Dropdown menu for Authors
@@ -210,8 +220,7 @@ const createGenreOptions = () => {
 };
 
 // Things to happen when the page first loads
-createBookList();
-createButtonText();
+createBookList(books);
 createAuthorOptions();
 createGenreOptions();
 
@@ -257,6 +266,20 @@ const handleItemClick = (event) => {
       }
     }
   }
+
+  const published = new Date(state.booksLoaded[idValue].published);
+
+  html.overlay.blur.setAttribute("src", state.booksLoaded[idValue].image);
+  html.overlay.image.setAttribute("src", state.booksLoaded[idValue].image);
+  html.overlay.title.innerText = state.booksLoaded[idValue].title;
+  html.overlay.subtitle.innerText = `${
+    authors[state.booksLoaded[idValue].author]
+  } (${published.getFullYear()})`;
+  html.overlay.description.innerText = state.booksLoaded[idValue].description;
+};
+
+const handleShowMore = () => {
+  createBookList(books);
 };
 
 // Event Listeners
@@ -274,20 +297,8 @@ html.settingsOverlay.cancel.addEventListener("click", handleSettingsToggle);
 
 html.list.items.addEventListener("click", handleItemClick);
 html.overlay.close.addEventListener("click", handleItemClick);
+html.list.button.addEventListener("click", handleShowMore);
 
-html.list.button.addEventListener(
-  "click",
-  console.log("Not really sure what this one is doing")
-);
-
-html.overlay.active.addEventListener();
-html.overlay.blur.addEventListener();
-html.overlay.image.addEventListener();
-html.overlay.title.addEventListener();
-html.overlay.subtitle.addEventListener();
-html.overlay.description.addEventListener();
-
-html.settingsOverlay.overlay.addEventListener();
 html.settingsOverlay.form.addEventListener(
   "submit",
   console.log("Saves chosen settings")
