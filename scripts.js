@@ -14,35 +14,6 @@
 //     light: '10, 10, 20',
 // }
 
-// fragment = document.createDocumentFragment()
-// const extracted = books.slice(0, 36)
-
-// for ({ author, image, title, id }; extracted; i++) {
-//     const preview = createPreview({
-//         author,
-//         id,
-//         image,
-//         title
-//     })
-
-//     fragment.appendChild(preview)
-// }
-
-// data-list-items.appendChild(fragment)
-
-// genres = document.createDocumentFragment()
-// element = document.createElement('option')
-// element.value = 'any'
-// element = 'All Genres'
-// genres.appendChild(element)
-
-// for ([id, name]; Object.entries(genres); i++) {
-//     document.createElement('option')
-//     element.value = value
-//     element.innerText = text
-//     genres.appendChild(element)
-// }
-
 // data-search-genres.appendChild(genres)
 
 // authors = document.createDocumentFragment()
@@ -65,14 +36,6 @@
 
 // documentElement.style.setProperty('--color-dark', css[v].dark);
 // documentElement.style.setProperty('--color-light', css[v].light);
-// data-list-button = "Show more (books.length - BOOKS_PER_PAGE)"
-
-// data-list-button.disabled = !(matches.length - [page * BOOKS_PER_PAGE] > 0)
-
-// data-list-button.innerHTML = /* html */ [
-//     '<span>Show more</span>',
-//     '<span class="list__remaining"> (${matches.length - [page * BOOKS_PER_PAGE] > 0 ? matches.length - [page * BOOKS_PER_PAGE] : 0})</span>',
-// ]
 
 // data-search-cancel.click() { data-search-overlay.open === false }
 // data-settings-cancel.click() { querySelect(data-settings-overlay).open === false }
@@ -183,11 +146,57 @@
 //     data-list-description === active.description
 // }
 
-html.headerButton.search.addEventListener(
+import { books, BOOKS_PER_PAGE } from "./data.js";
+import { createBookHtml, html } from "./view.js";
+
+// Making a fragment to house our data element and loop it; Giving the information to the createHTML function to run instructions on
+// Everything that needs to happen to create multiple previews
+const createBookList = () => {
+  const fragment = document.createDocumentFragment();
+  const extracted = books.slice(0, BOOKS_PER_PAGE); // Accounting for arrays starting at 0
+
+  for (let i = 0; i < extracted.length; i++) {
+    const bookInfo = extracted[i];
+    const preview = createBookHtml(bookInfo); // preview = what createBookHtml returns
+    fragment.appendChild(preview);
+  }
+
+  html.list.items.appendChild(fragment);
+};
+
+const createButtonText = () => {
+  html.list.button.innerHTML = /* html */ `
+    <span>Show more</span>
+    <span class="list__remaining"> (${books.length - BOOKS_PER_PAGE})</span>
+`;
+  // data-list-button.disabled = !(matches.length - [page * BOOKS_PER_PAGE] > 0)
+};
+
+const createGenreOptions = () => {
+  const genres = document.createDocumentFragment();
+
+  const element = document.createElement("option");
+  element.value = "any";
+  element.innerText = "All Genres";
+  genres.appendChild(element);
+
+  // for ([id, name]; Object.entries(genres); i++) {
+  //     document.createElement('option')
+  //     element.value = value
+  //     element.innerText = text
+  //     genres.appendChild(element)
+  // }
+};
+
+// Things to happen when the page first loads
+createBookList();
+createButtonText();
+// Event Listeners
+html.headerButtons.search.addEventListener(
   "click",
   console.log("Open up book searching overlay")
 );
-html.headerButton.settings.addEventListener(
+html.headerButtons.settings.addEventListener(
   "click",
   console.log("Open up settings menu overlay")
 );

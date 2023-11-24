@@ -1,3 +1,5 @@
+import { authors } from "./data.js";
+
 export const html = {
   headerButtons: {
     search: document.querySelector("[data-header-search]"),
@@ -31,4 +33,26 @@ export const html = {
     theme: document.querySelector("[data-settings-theme]"),
     cancel: document.querySelector("[data-settings-cancel]"),
   },
+};
+//The HTML element is the instructions but still needs to receive data to apply those instruction to
+// What's needed to create one preview
+export const createBookHtml = (preview) => {
+  const { id, title, image, author } = preview;
+
+  const element = document.createElement("div");
+  element.className = "preview";
+  element.dataset.id = id;
+
+  element.innerHTML = /* html */ `
+
+    <img class="preview__image" src=${image} alt="Book Cover"></img>
+    
+    <div class="preview__info"> 
+    <div class="preview__title">${title}</div>
+    <div class="preview__author">${authors[author]}</div>
+    
+    </div>
+
+  `;
+  return element;
 };
