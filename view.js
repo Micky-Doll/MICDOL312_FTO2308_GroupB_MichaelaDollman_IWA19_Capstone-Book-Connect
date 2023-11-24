@@ -7,7 +7,7 @@ export const html = {
   },
   list: {
     items: document.querySelector("[data-list-items]"),
-    messages: document.querySelector("[data-list-messages]"),
+    message: document.querySelector("[data-list-message]"),
     button: document.querySelector("[data-list-button]"),
   },
   overlay: {

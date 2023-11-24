@@ -27,7 +27,7 @@ Show More <span class="list__remaining">(${0})</span>
     html.list.button.disabled = false;
     html.list.button.innerHTML = `
     Show More <span class="list__remaining">(${
-      array.length - Object.keys(state.loaded).length
+      array.length - Object.keys(state.booksLoaded).length
     })</span>`;
   }
 };
@@ -115,7 +115,6 @@ if (
 
 // Event Handlers
 const handleSearchToggle = (event) => {
-  event.preventDefault();
   html.searchOverlay.overlay.toggleAttribute("open");
 };
 
@@ -191,10 +190,53 @@ const handleSettingsSubmit = (event) => {
   handleSettingsToggle();
 };
 
+const handleSearchSubmit = (event) => {
+  event.preventDefault();
+  const titleValue = event.target[0].value.trim();
+  const genreID = event.target[1].value;
+  const authorID = event.target[2].value;
+  state.pageNumber = 1;
+  state.searchResult = [];
+  state.booksLoaded = {};
+  state.isSearching = true;
+
+  const searchResults = books.filter((book) => {
+    const titleCheck =
+      titleValue === ""
+        ? true
+        : book["title"].toLowerCase().includes(titleValue.toLowerCase());
+    const genreCheck =
+      genreID === "any" ? true : book["genres"].includes(genreID);
+    const authorCheck = authorID === "any" ? true : book["author"] === authorID;
+
+    return titleCheck && genreCheck && authorCheck;
+  });
+
+  while (html.list.items.hasChildNodes()) {
+    html.list.items.removeChild(html.list.items.firstChild);
+  }
+
+  if (searchResults.length === 0) {
+    createButtonText(searchResults);
+    handleSearchToggle();
+    html.list.message.style.display = "block";
+    return;
+  } else {
+    html.list.message.style.display = "none";
+    for (const element in searchResults) {
+      state.searchResult.push(searchResults[element]);
+    }
+  }
+
+  createBookList(state.searchResult);
+  handleSearchToggle();
+};
+
 // Event Listeners
 html.headerButtons.search.addEventListener("click", handleSearchToggle);
 
 html.searchOverlay.cancel.addEventListener("click", handleSearchToggle);
+html.searchOverlay.form.addEventListener("submit", handleSearchSubmit);
 
 html.headerButtons.settings.addEventListener("click", handleSettingsToggle);
 html.settingsOverlay.cancel.addEventListener("click", handleSettingsToggle);
